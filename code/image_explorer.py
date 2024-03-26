@@ -48,6 +48,15 @@ import sys
 
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
+
+##terminal en couleur
+#on utilise la librairie termcolor
+from termcolor import colored
+def print_colored(text,color):
+    print(colored(text,color))
+    
+
+
 def get_date_taken(path):
     exif = Image.open(path)._getexif()
 
@@ -62,36 +71,52 @@ def get_labeled_exif(exif):
 
 
 
-    
+def get_info(path):
+    exif = Image.open(path)._getexif()
+    if exif:
+        labeled_exif = get_labeled_exif(exif)
+        for key, value in labeled_exif.items():
+            print_colored(f'{key}: {value}', 'green')   
+    else:
+        print_colored('Pas d\'informations Exif', 'red')
 
 
-def list_images(folder,options):
+def list_images(folder,optExif=None,optionRecursif=None):
     images = []
     for root,dirs,files in os.walk(folder):#os.walk permet de parcourir les dossiers et les fichiers
-        print('nous sommes dans le dossier',root)   
+          
         for file in files:
             if file.endswith('.png') or file.endswith('.jpg'):
                 path_image=os.path.join(root, file)
                 images.append(path_image)
-                if options=='--showExif':
-                    print('Informations Exif de l\'image',file)
-                    exif = Image.open(path_image)._getexif()
-                    if exif:
-                        labeled_exif = get_labeled_exif(exif)
-                        for key, value in labeled_exif.items():
-                            print(f'{key}: {value}')
-                    else:
-                        print('pas de données exif')
+                if optExif=='--showExif':
+                    print_colored(path_image,'blue')
+                    get_info(path_image)
                     
-
+        if optionRecursif!='--recursive':
+            break
+            
                 
     return images
 
 
+
+
+
+
 def main():
     args=sys.argv
-    images=list_images(args[2],args[1])
+    images=[]
+    if len(args)==3:
+        images=list_images(args[2],args[1],args[1])
+    if len(args)==2:
+        images=list_images(args[1])
+    if len(args)==1:
+        print("Veuillez au moins entrer un dossier (vos options dans l'ordre: --showExif, --recursive)")
+    if len (args)==4:
+        images=list_images(args[3],args[1],args[2])
     print(images)
+  
    
     
 main()
