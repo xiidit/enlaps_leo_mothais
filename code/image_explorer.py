@@ -1,3 +1,37 @@
+# Il vous est demandé de faire une application python en ligne de commande
+# > > qui est capable de lister les images (jpg, png) d’un dossier et en option
+# > > d’afficher les informations exif de “DateTimeOriginal” et celles
+# > relatives
+# > > aux donnée GPS de ces images sur la sortie standard de la console.
+# > >
+# > > Prototype minimal:
+# > >
+# > > python image_explorer.py [—-showExif] INPUT_FOLDER
+# > >
+# > > Le candidat est libre d’ajouter des options.
+# > >
+# > > Exemples d’options:
+# > >
+# > >    -
+# > >
+# > >    lister le dossier de manière récursive
+# > >    -
+# > >
+# > >    spécifier les champ exifs que l’on veut afficher
+# > >    -clear
+# > >
+# > >    affichage d’une sortie standard en couleur
+# > >
+# > >
+# > > Modalités d’évaluation:
+# > >
+# > >    -
+# > >
+# > >    Vous aurez 2h maximum à accorder à ce test (en auto-gestion).
+# > >    -
+# > >
+# > >    La créativité ainsi que toute initiative seront valorisées lors de
+# > >    l’entretien.
 
 
 
@@ -5,20 +39,48 @@
 #les images à tester se trouvent dans le dossier image_png
 
 import os
+# on prend en comptes les options -showExif
+import sys
+##on cherche les informations exif de l'image
+#on utilise la librairie PIL
 
-def list_images(folder):
+
+from PIL import Image
+def get_date_taken(path):
+    exif = Image.open(path)._getexif()
+    
+
+
+def list_images(folder,options):
     images = []
-    for root,dirs,files in os.walk(folder):#os.walk permet de parcourir les dossiers et les fichiers   
+    for root,dirs,files in os.walk(folder):#os.walk permet de parcourir les dossiers et les fichiers
+        print('nous sommes dans le dossier',root)   
         for file in files:
             if file.endswith('.png') or file.endswith('.jpg'):
-                images.append(os.path.join(root, file))
+                path_image=os.path.join(root, file)
+                images.append(path_image)
+                if options=='--showExif':
+                    print('Exif information for image',file)
+                    ##on cherche le datetimeoriginal
+                    if(get_date_taken(path_image)!=None):
+                        print(get_date_taken(path_image))
+                    else:
+                        print('pas de date pour cette image')
+                    ##on cherche les données GPS
+                    exif = Image.open(path_image)._getexif()
+                    if exif:
+                        print('GPSInfo:',exif['GPSInfo'])
+                    else:
+                        print('pas de données GPS pour cette image')
+
                 
     return images
 
 
 def main():
-    
-    images=list_images('image_png')
+    args=sys.argv
+    images=list_images('image_png',args[1])
     print(images)
+   
     
 main()
