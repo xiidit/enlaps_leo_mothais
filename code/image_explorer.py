@@ -45,9 +45,23 @@ import sys
 #on utilise la librairie PIL
 
 
+
 from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
 def get_date_taken(path):
     exif = Image.open(path)._getexif()
+
+
+
+
+def get_labeled_exif(exif):
+    return {
+        TAGS.get(key, key): value
+        for key, value in exif.items()
+    }
+
+
+
     
 
 
@@ -60,18 +74,15 @@ def list_images(folder,options):
                 path_image=os.path.join(root, file)
                 images.append(path_image)
                 if options=='--showExif':
-                    print('Exif information for image',file)
-                    ##on cherche le datetimeoriginal
-                    if(get_date_taken(path_image)!=None):
-                        print(get_date_taken(path_image))
-                    else:
-                        print('pas de date pour cette image')
-                    ##on cherche les données GPS
+                    print('Informations Exif de l\'image',file)
                     exif = Image.open(path_image)._getexif()
                     if exif:
-                        print('GPSInfo:',exif['GPSInfo'])
+                        labeled_exif = get_labeled_exif(exif)
+                        for key, value in labeled_exif.items():
+                            print(f'{key}: {value}')
                     else:
-                        print('pas de données GPS pour cette image')
+                        print('pas de données exif')
+                    
 
                 
     return images
@@ -79,7 +90,7 @@ def list_images(folder,options):
 
 def main():
     args=sys.argv
-    images=list_images('image_png',args[1])
+    images=list_images(args[2],args[1])
     print(images)
    
     
